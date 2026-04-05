@@ -1,0 +1,429 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+
+.shell{padding:0.75rem 0}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:8px;flex-wrap:wrap}
+.mode-switcher{display:flex;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);overflow:hidden}
+.mode-btn{padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans);transition:background 0.15s,color 0.15s;white-space:nowrap}
+.mode-btn.on{background:var(--color-text-primary);color:var(--color-background-primary)}
+.mode-btn:hover:not(.on){background:var(--color-background-secondary)}
+
+.filter-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.filter-group{display:flex;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.f-btn{padding:5px 11px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans);transition:all 0.12s}
+.f-btn.on{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.f-btn:hover:not(.on){color:var(--color-text-primary)}
+.filter-label{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+
+.view{display:none}.view.on{display:block}
+
+/* ─── MODO DECISIÓN ─── */
+.decision-frame{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-xl);padding:2rem 1.5rem;text-align:center;max-width:420px;margin:0 auto}
+.signal-icon{width:72px;height:72px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center}
+.signal-icon svg{width:36px;height:36px}
+.sig-buy .signal-icon{background:#EAF3DE}
+.sig-sell .signal-icon{background:#FCEBEB}
+.sig-wait .signal-icon{background:#FAEEDA}
+.signal-word{font-size:32px;font-weight:500;letter-spacing:-0.5px;margin-bottom:4px}
+.sig-buy .signal-word{color:#0F6E56}
+.sig-sell .signal-word{color:#A32D2D}
+.sig-wait .signal-word{color:#854F0B}
+.signal-price{font-size:28px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.signal-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.signal-reason{font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:1.5rem;padding:12px 16px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.signal-action{display:block;width:100%;padding:13px;font-size:14px;font-weight:500;border:none;border-radius:var(--border-radius-lg);cursor:pointer;font-family:var(--font-sans);letter-spacing:0.01em;transition:opacity 0.15s}
+.action-buy{background:#1D9E75;color:white}.action-buy:hover{opacity:0.88}
+.action-sell{background:#D85A30;color:white}.action-sell:hover{opacity:0.88}
+.action-wait{background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary)}.action-wait:hover{background:var(--color-background-primary)}
+.score-ring{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1.2rem}
+.score-pip{width:8px;height:8px;border-radius:50%;background:var(--color-border-tertiary)}
+.score-pip.lit-g{background:#1D9E75}
+.score-pip.lit-a{background:#BA7517}
+.score-pip.lit-r{background:#D85A30}
+.secondary-toggle{font-size:11px;color:var(--color-text-secondary);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-top:1rem;display:inline-block}
+.secondary-data{display:none;margin-top:1rem;border-top:0.5px solid var(--color-border-tertiary);padding-top:1rem}
+.secondary-data.show{display:block}
+.mini-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
+
+/* ─── MODO SEGUIMIENTO ─── */
+.g3t{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1rem}
+.g2t{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:1rem}
+.mc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.mc .lb{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.mc .vl{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.mc .sb{font-size:11px;margin-top:3px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:.9rem}
+.ht{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem}
+.pos{color:#0F6E56}.neg{color:#A32D2D}.neu{color:var(--color-text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bg{background:#EAF3DE;color:#173404}.br{background:#FCEBEB;color:#501313}
+.ba{background:#FAEEDA;color:#412402}.bb{background:#E6F1FB;color:#042C53}
+.timeline-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.timeline-row:last-child{border-bottom:none}
+.t-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.t-win{background:#1D9E75}.t-loss{background:#D85A30}.t-pend{background:#BA7517}
+
+/* ─── MODO ANÁLISIS ─── */
+.analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:1rem}
+.ind-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.ind-row:last-child{border-bottom:none}
+.ind-name{font-size:12px;color:var(--color-text-secondary);flex:1;min-width:80px}
+.ind-val{font-size:12px;font-weight:500;color:var(--color-text-primary);min-width:60px;text-align:right}
+.ind-signal{min-width:60px;text-align:right}
+.bar-bg{height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;flex:1}
+.bar-fg{height:100%;border-radius:3px}
+.strat-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px;margin-bottom:8px}
+.strat-card.active{border:2px solid #1D9E75}
+.strat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.strat-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.strat-stats{display:flex;gap:12px;font-size:11px;color:var(--color-text-secondary)}
+.detail-toggle{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--color-text-secondary);padding:6px 0;margin-top:4px;user-select:none}
+.detail-content{display:none;padding-top:8px;border-top:0.5px solid var(--color-border-tertiary);margin-top:8px}
+.detail-content.open{display:block}
+.chevron{display:inline-block;transition:transform 0.2s;font-size:10px}
+.chevron.open{transform:rotate(180deg)}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:6px 8px;font-size:10px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);text-transform:uppercase;letter-spacing:.04em}
+td{padding:7px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--color-background-secondary)}
+</style>
+
+<div class="shell">
+
+<div class="topbar">
+  <div>
+    <div style="font-size:16px;font-weight:500;color:var(--color-text-primary)">USD/PEN &nbsp;<span style="font-size:22px;font-weight:500" id="top-tc">3.7245</span></div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:1px">BCRP ref · <span id="top-time">Lun 04 Abr · 10:32am</span></div>
+  </div>
+  <div class="mode-switcher">
+    <button class="mode-btn" onclick="setMode('decision',this)">Decisión</button>
+    <button class="mode-btn on" onclick="setMode('seguimiento',this)">Seguimiento</button>
+    <button class="mode-btn" onclick="setMode('analisis',this)">Análisis</button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filter-bar">
+  <span class="filter-label">Moneda</span>
+  <div class="filter-group">
+    <button class="f-btn on" onclick="setF('cur','usd',this)">USD</button>
+    <button class="f-btn" onclick="setF('cur','pen',this)">PEN</button>
+    <button class="f-btn" onclick="setF('cur','both',this)">Ambas</button>
+  </div>
+  <span class="filter-label" style="margin-left:6px">Periodo</span>
+  <div class="filter-group">
+    <button class="f-btn" onclick="setF('per','dia',this)">Día</button>
+    <button class="f-btn on" onclick="setF('per','sem',this)">Semana</button>
+    <button class="f-btn" onclick="setF('per','mes',this)">Mes</button>
+  </div>
+  <span class="filter-label" style="margin-left:6px">Tipo</span>
+  <div class="filter-group">
+    <button class="f-btn on" onclick="setF('tipo','all',this)">Todas</button>
+    <button class="f-btn" onclick="setF('tipo','buy',this)">Compras</button>
+    <button class="f-btn" onclick="setF('tipo','sell',this)">Ventas</button>
+  </div>
+</div>
+
+<!-- ════ MODO DECISIÓN ════ -->
+<div id="v-decision" class="view">
+  <div class="decision-frame sig-buy" id="sig-frame">
+    <div class="signal-icon" id="sig-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    </div>
+    <div class="signal-word" id="sig-word">Comprar</div>
+    <div class="signal-price" id="sig-price">3.7245</div>
+    <div class="signal-label">TC actual USD/PEN · BCRP</div>
+    <div class="score-ring" id="score-ring"></div>
+    <div class="signal-reason" id="sig-reason">RSI en sobreventa (31.4) + precio toca banda inferior Bollinger. Patrón histórico: 72% de reversi\u00f3n alcista en 48h.</div>
+    <button class="signal-action action-buy" id="sig-cta" onclick="sendPrompt('¿Cuánto debería comprar según el tamaño de posición recomendado con capital de S/ 30,000?')">Comprar USD ahora — ver posición recomendada ↗</button>
+    <span class="secondary-toggle" onclick="toggleSecondary()">Ver detalles secundarios</span>
+    <div class="secondary-data" id="secondary-data">
+      <div class="mini-row"><span style="color:var(--color-text-secondary)">Stop loss dinámico</span><span style="font-weight:500;color:#A32D2D">3.7060</span></div>
+      <div class="mini-row"><span style="color:var(--color-text-secondary)">Take profit objetivo</span><span style="font-weight:500;color:#0F6E56">3.7410</span></div>
+      <div class="mini-row"><span style="color:var(--color-text-secondary)">Riesgo/Reward</span><span style="font-weight:500">1 : 2.4</span></div>
+      <div class="mini-row"><span style="color:var(--color-text-secondary)">Régimen actual</span><span class="badge bb">Mean reversion</span></div>
+      <div class="mini-row"><span style="color:var(--color-text-secondary)">Confianza de señal</span><span style="font-weight:500">78 / 100</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:1.2rem;flex-wrap:wrap">
+    <button style="padding:6px 14px;font-size:11px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans)" onclick="setSignal('buy')">Simular: Compra</button>
+    <button style="padding:6px 14px;font-size:11px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans)" onclick="setSignal('sell')">Simular: Venta</button>
+    <button style="padding:6px 14px;font-size:11px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);font-family:var(--font-sans)" onclick="setSignal('wait')">Simular: Esperar</button>
+  </div>
+</div>
+
+<!-- ════ MODO SEGUIMIENTO ════ -->
+<div id="v-seguimiento" class="view on">
+  <div class="g3t">
+    <div class="mc"><div class="lb">Capital actual</div><div class="vl" id="cap-val">S/ 32,847</div><div class="sb pos" id="cap-sub">+S/ 2,847 · +9.49%</div></div>
+    <div class="mc"><div class="lb">P&L esta semana</div><div class="vl pos" id="pnl-val">+S/ 412</div><div class="sb pos">+1.27% semanal</div></div>
+    <div class="mc"><div class="lb">Posición abierta</div><div class="vl" id="pos-val">$2,150</div><div class="sb neu">USD · desde 3.7120</div></div>
+  </div>
+
+  <div class="card">
+    <div class="ht">Curva de capital</div>
+    <div style="position:relative;height:140px"><canvas id="capChart"></canvas></div>
+  </div>
+
+  <div class="g2t">
+    <div class="card" style="margin:0">
+      <div class="ht">Últimas operaciones</div>
+      <div class="timeline-row"><div class="t-dot t-win"></div><div style="flex:1"><div style="font-size:12px;font-weight:500">Compra USD · 05/02</div><div style="font-size:11px;color:var(--color-text-secondary)">$2,014 · entrada 3.7230</div></div><span class="pos" style="font-size:12px;font-weight:500">+S/ 113</span></div>
+      <div class="timeline-row"><div class="t-dot t-loss"></div><div style="flex:1"><div style="font-size:12px;font-weight:500">Venta USD · 22/01</div><div style="font-size:11px;color:var(--color-text-secondary)">$2,150 · entrada 3.7200</div></div><span class="neg" style="font-size:12px;font-weight:500">-S/ 12</span></div>
+      <div class="timeline-row"><div class="t-dot t-win"></div><div style="flex:1"><div style="font-size:12px;font-weight:500">Compra USD · 15/01</div><div style="font-size:11px;color:var(--color-text-secondary)">$5,000 · entrada 3.7120</div></div><span class="pos" style="font-size:12px;font-weight:500">+S/ 172</span></div>
+      <div class="timeline-row" style="border:none"><div class="t-dot t-pend"></div><div style="flex:1"><div style="font-size:12px;font-weight:500">Abierta · hoy</div><div style="font-size:11px;color:var(--color-text-secondary)">$2,150 · entrada 3.7240</div></div><span class="ba badge">En curso</span></div>
+    </div>
+    <div class="card" style="margin:0">
+      <div class="ht">Métricas clave</div>
+      <div class="timeline-row"><span style="font-size:12px;color:var(--color-text-secondary);flex:1">Win rate</span><div style="display:flex;align-items:center;gap:8px"><div class="bar-bg" style="width:80px"><div class="bar-fg" style="width:68%;background:#1D9E75"></div></div><span style="font-size:12px;font-weight:500;min-width:32px">68%</span></div></div>
+      <div class="timeline-row"><span style="font-size:12px;color:var(--color-text-secondary);flex:1">Profit factor</span><div style="display:flex;align-items:center;gap:8px"><div class="bar-bg" style="width:80px"><div class="bar-fg" style="width:77%;background:#185FA5"></div></div><span style="font-size:12px;font-weight:500;min-width:32px">2.31</span></div></div>
+      <div class="timeline-row"><span style="font-size:12px;color:var(--color-text-secondary);flex:1">Max drawdown</span><div style="display:flex;align-items:center;gap:8px"><div class="bar-bg" style="width:80px"><div class="bar-fg" style="width:32%;background:#D85A30"></div></div><span class="neg" style="font-size:12px;font-weight:500;min-width:32px">3.2%</span></div></div>
+      <div class="timeline-row"><span style="font-size:12px;color:var(--color-text-secondary);flex:1">Sharpe ratio</span><div style="display:flex;align-items:center;gap:8px"><div class="bar-bg" style="width:80px"><div class="bar-fg" style="width:62%;background:#1D9E75"></div></div><span class="pos" style="font-size:12px;font-weight:500;min-width:32px">1.87</span></div></div>
+      <div class="timeline-row" style="border:none"><span style="font-size:12px;color:var(--color-text-secondary);flex:1">Exposición USD</span><div style="display:flex;align-items:center;gap:8px"><div class="bar-bg" style="width:80px"><div class="bar-fg" style="width:68%;background:#BA7517"></div></div><span style="font-size:12px;font-weight:500;min-width:32px">68%</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODO ANÁLISIS ════ -->
+<div id="v-analisis" class="view">
+  <div class="analysis-grid">
+    <div class="card" style="margin:0">
+      <div class="ht">Indicadores técnicos</div>
+      <div class="ind-row">
+        <span class="ind-name">RSI (14)</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:31%;background:#1D9E75"></div></div>
+        <span class="ind-val">31.4</span>
+        <span class="ind-signal"><span class="badge bg">Compra</span></span>
+      </div>
+      <div class="ind-row">
+        <span class="ind-name">BB posición</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:12%;background:#1D9E75"></div></div>
+        <span class="ind-val">12%</span>
+        <span class="ind-signal"><span class="badge bg">Compra</span></span>
+      </div>
+      <div class="ind-row">
+        <span class="ind-name">SMA20 vs SMA50</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:55%;background:#185FA5"></div></div>
+        <span class="ind-val">+0.0015</span>
+        <span class="ind-signal"><span class="badge bb">Neutro</span></span>
+      </div>
+      <div class="ind-row">
+        <span class="ind-name">MACD</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:40%;background:#D85A30"></div></div>
+        <span class="ind-val">-0.0022</span>
+        <span class="ind-signal"><span class="badge br">Venta</span></span>
+      </div>
+      <div class="ind-row">
+        <span class="ind-name">ATR (14)</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:25%;background:#BA7517"></div></div>
+        <span class="ind-val">0.0075</span>
+        <span class="ind-signal"><span class="badge ba">Bajo</span></span>
+      </div>
+      <div class="ind-row">
+        <span class="ind-name">ADX (14)</span>
+        <div class="bar-bg"><div class="bar-fg" style="width:37%;background:#BA7517"></div></div>
+        <span class="ind-val">18.4</span>
+        <span class="ind-signal"><span class="badge ba">Sin tend.</span></span>
+      </div>
+    </div>
+
+    <div class="card" style="margin:0">
+      <div class="ht">Score de señal · 78/100</div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-bottom:5px"><span>Score compuesto</span><span style="font-weight:500;color:var(--color-text-primary)">78 / 100</span></div>
+        <div style="height:10px;background:var(--color-background-secondary);border-radius:5px;overflow:hidden"><div style="width:78%;height:100%;background:#1D9E75;border-radius:5px"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-secondary);margin-top:3px"><span>Vender fuerte</span><span>Neutral</span><span>Comprar fuerte</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--color-text-secondary)">RSI (peso 30%)</span><span style="font-weight:500" class="pos">+25 pts</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--color-text-secondary)">Bollinger (peso 25%)</span><span style="font-weight:500" class="pos">+18 pts</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--color-text-secondary)">SMA trend (peso 20%)</span><span style="font-weight:500" class="pos">+16 pts</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--color-text-secondary)">MACD (peso 15%)</span><span style="font-weight:500" class="neg">-8 pts</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:var(--color-text-secondary)">Volatilidad (peso 10%)</span><span style="font-weight:500" class="pos">+10 pts</span></div>
+        <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="font-weight:500">Total</span><span style="font-weight:500;font-size:15px" class="pos">+61 → 78/100</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ht">Estrategias activas — comparación</div>
+    <div class="strat-card active">
+      <div class="strat-header">
+        <span class="strat-name">RSI + Bollinger Bands</span>
+        <span class="badge bg">Activa · Recomendada</span>
+      </div>
+      <div class="strat-stats">
+        <span>ROI 6m: <strong style="color:#0F6E56">+9.5%</strong></span>
+        <span>Win rate: <strong>68%</strong></span>
+        <span>Sharpe: <strong>1.87</strong></span>
+        <span>DD: <strong style="color:#A32D2D">-3.2%</strong></span>
+      </div>
+      <div class="detail-toggle" onclick="toggleDetail('d1',this)"><span class="chevron" id="ch-d1">&#8964;</span> Ver reglas de entrada/salida</div>
+      <div class="detail-content" id="d1">
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+          <strong style="color:var(--color-text-primary)">Entrada:</strong> RSI &lt; 35 AND precio &lt; BB_lower AND SMA20 &gt; SMA50<br>
+          <strong style="color:var(--color-text-primary)">Salida TP:</strong> RSI &gt; 65 OR precio &gt; BB_upper<br>
+          <strong style="color:var(--color-text-primary)">Salida SL:</strong> TC cae más de 1.5× ATR desde entrada<br>
+          <strong style="color:var(--color-text-primary)">Posición:</strong> 2% del capital por operación · máx 3 posiciones simultáneas
+        </div>
+      </div>
+    </div>
+    <div class="strat-card">
+      <div class="strat-header">
+        <span class="strat-name">Momentum ROC + MACD</span>
+        <span class="badge ba">Inactiva · ADX &lt; 25</span>
+      </div>
+      <div class="strat-stats">
+        <span>ROI 6m: <strong style="color:#0F6E56">+7.8%</strong></span>
+        <span>Win rate: <strong>59%</strong></span>
+        <span>Sharpe: <strong>1.41</strong></span>
+        <span>DD: <strong style="color:#A32D2D">-5.8%</strong></span>
+      </div>
+      <div class="detail-toggle" onclick="toggleDetail('d2',this)"><span class="chevron" id="ch-d2">&#8964;</span> Ver reglas de entrada/salida</div>
+      <div class="detail-content" id="d2">
+        <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+          <strong style="color:var(--color-text-primary)">Activar cuando:</strong> ADX &gt; 28 AND % P&L por FX &gt; 50%<br>
+          <strong style="color:var(--color-text-primary)">Entrada:</strong> ROC(5d) &gt; 0.1% AND MACD cruce positivo<br>
+          <strong style="color:var(--color-text-primary)">Salida:</strong> Trailing stop 2× ATR desde máximo<br>
+          <strong style="color:var(--color-text-primary)">Posición:</strong> 3% capital · max 2 simultáneas
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ht">Historial con filtro</div>
+    <div style="overflow-x:auto">
+    <table id="hist-table">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>TC entrada</th><th>TC salida</th><th>P&L</th><th>Calidad</th></tr></thead>
+      <tbody id="hist-body"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var currentMode='seguimiento';
+var filters={cur:'usd',per:'sem',tipo:'all'};
+
+var signals={
+  buy:{cls:'sig-buy',word:'Comprar',ctaCls:'action-buy',ctaTxt:'Comprar USD ahora — ver posición recomendada ↗',iconStroke:'#0F6E56',iconPath:'M18 15 12 9 6 15',reason:'RSI en sobreventa (31.4) + precio toca banda inferior Bollinger. Patrón histórico: 72% de reversión alcista en 48h.',pips:['lit-g','lit-g','lit-g','lit-g','lit-g','lit-a','lit-a','lit-g','lit-g','lit-g']},
+  sell:{cls:'sig-sell',word:'Vender',ctaCls:'action-sell',ctaTxt:'Vender USD ahora — ver posición recomendada ↗',iconStroke:'#A32D2D',iconPath:'M6 9 12 15 18 9',reason:'RSI en sobrecompra (71.2) + precio toca banda superior Bollinger. Señal de reversión bajista con 68% de probabilidad histórica.',pips:['lit-r','lit-r','lit-r','lit-r','lit-r','lit-r','lit-r','lit-a','lit-a','lit-a']},
+  wait:{cls:'sig-wait',word:'Esperar',ctaCls:'action-wait',ctaTxt:'Mantener posición actual',iconStroke:'#854F0B',iconPath:'M12 5 12 19 M5 12 19 12',reason:'Señal no confirmada. ADX bajo 20, rango estrecho. Esperar RSI &lt; 35 o &gt; 65 para entrada con mayor certeza.',pips:['lit-a','lit-a','lit-a','lit-a','lit-a','lit-a','lit-a','lit-a','lit-a','lit-a']}
+};
+
+function setSignal(type){
+  var s=signals[type];
+  var frame=document.getElementById('sig-frame');
+  frame.className='decision-frame '+s.cls;
+  document.getElementById('sig-word').textContent=s.word;
+  document.getElementById('sig-icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="'+s.iconStroke+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="'+s.iconPath+'"/></svg>';
+  document.getElementById('sig-reason').innerHTML=s.reason;
+  var cta=document.getElementById('sig-cta');
+  cta.className='signal-action '+s.ctaCls;
+  cta.textContent=s.ctaTxt;
+  var ring=document.getElementById('score-ring');
+  ring.innerHTML=s.pips.map(p=>'<div class="score-pip '+p+'"></div>').join('');
+}
+
+function toggleSecondary(){
+  var el=document.getElementById('secondary-data');
+  el.classList.toggle('show');
+}
+
+function setMode(mode,btn){
+  currentMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+mode).classList.add('on');
+  var fb=document.getElementById('filter-bar');
+  fb.style.display=mode==='decision'?'none':'flex';
+  if(mode==='seguimiento'&&!window._capInited){initCapChart();window._capInited=true;}
+  if(mode==='analisis'){renderHistTable();}
+}
+
+function setF(group,val,btn){
+  filters[group]=val;
+  var parent=btn.parentElement;
+  parent.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updateFollowMode();
+  if(currentMode==='analisis') renderHistTable();
+}
+
+function updateFollowMode(){
+  var isSem=filters.per==='sem';
+  var isMes=filters.per==='mes';
+  var pnlBase=isMes?1847:isSem?412:87;
+  var pnlPct=isMes?6.16:isSem?1.27:0.27;
+  var capBase=isMes?31847:isSem?32847:30935;
+  var isPEN=filters.cur!=='usd';
+  if(isPEN){
+    document.getElementById('cap-val').textContent='S/ '+capBase.toLocaleString();
+    document.getElementById('pnl-val').textContent='+S/ '+pnlBase.toLocaleString();
+    document.getElementById('pos-val').textContent='S/ 8,007';
+  } else {
+    document.getElementById('cap-val').textContent='$'+(capBase/3.7245).toFixed(0);
+    document.getElementById('pnl-val').textContent='+$'+(pnlBase/3.7245).toFixed(0);
+    document.getElementById('pos-val').textContent='$2,150';
+  }
+  document.getElementById('cap-sub').textContent='+'+(isPEN?'S/ ':' $')+(Math.round(capBase-30000)).toLocaleString()+' · +'+((capBase-30000)/30000*100).toFixed(2)+'%';
+  document.getElementById('pnl-val').className='vl pos';
+}
+
+function initCapChart(){
+  var labels=['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10'];
+  var data=[30000,30180,30450,30210,30680,31100,30950,31420,32100,32847];
+  new Chart(document.getElementById('capChart'),{
+    type:'line',
+    data:{labels,datasets:[{data,borderColor:'#185FA5',borderWidth:2,pointRadius:2,tension:0.4,fill:true,backgroundColor:'rgba(24,95,165,0.06)'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'S/'+Math.round(v/1000)+'k',font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}
+  });
+}
+
+var allOps=[
+  {fecha:'15/01',tipo:'buy',monto:'$5,000',tcIn:3.7120,tcOut:3.7350,pnl:'+S/ 172',win:true},
+  {fecha:'22/01',tipo:'sell',monto:'S/ 8,000',tcIn:3.7200,tcOut:3.7080,pnl:'-S/ 12',win:false},
+  {fecha:'05/02',tipo:'buy',monto:'S/ 7,500',tcIn:3.7230,tcOut:3.7490,pnl:'+S/ 113',win:true},
+  {fecha:'12/02',tipo:'buy',monto:'$3,000',tcIn:3.7240,tcOut:3.7310,pnl:'+S/ 24',win:true},
+  {fecha:'19/02',tipo:'sell',monto:'S/ 5,000',tcIn:3.7380,tcOut:3.7190,pnl:'+S/ 95',win:true},
+  {fecha:'01/03',tipo:'buy',monto:'$2,500',tcIn:3.7150,tcOut:3.7080,pnl:'-S/ 47',win:false},
+];
+
+function renderHistTable(){
+  var filtered=allOps.filter(o=>{
+    if(filters.tipo==='buy'&&o.tipo!=='buy') return false;
+    if(filters.tipo==='sell'&&o.tipo!=='sell') return false;
+    return true;
+  });
+  document.getElementById('hist-body').innerHTML=filtered.map(o=>`
+    <tr>
+      <td>${o.fecha}</td>
+      <td><span class="badge ${o.tipo==='buy'?'bg':'br'}">${o.tipo==='buy'?'Compra':'Venta'} USD</span></td>
+      <td>${o.monto}</td>
+      <td>${o.tcIn.toFixed(4)}</td>
+      <td>${o.tcOut.toFixed(4)}</td>
+      <td class="${o.win?'pos':'neg'}" style="font-weight:500">${o.pnl}</td>
+      <td><span class="badge ${o.win?'bg':'br'}">${o.win?'Ganadora':'Perdedora'}</span></td>
+    </tr>`).join('');
+}
+
+function toggleDetail(id,el){
+  var content=document.getElementById(id);
+  var ch=document.getElementById('ch-'+id);
+  content.classList.toggle('open');
+  ch.classList.toggle('open');
+}
+
+setSignal('buy');
+renderHistTable();
+</script>
